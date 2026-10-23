@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Nearspace - A neighborhood of stars</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Nearspace home"><span class="brand-mark" aria-hidden="true">&#10035;</span><span>nearspace<span class="brand-period">.</span></span></a>
+      <span class="header-caption">A NEIGHBORHOOD OF STARS</span>
+      <div class="header-actions"><span class="live-dot"></span><span class="dataset-tag">50 LY CATALOG</span><button id="about-button" class="icon-button" aria-label="About this map" title="About the data">i</button><button id="theme-button" class="icon-button" aria-label="Switch color theme" title="Switch color theme">&#9680;</button></div>
+    </header>
+    <aside class="sidebar" id="catalog-panel" aria-label="Star catalog">
+      <button id="catalog-close" class="icon-button mobile-only catalog-close" aria-label="Close star catalog">&#10005;</button>
+      <div class="sidebar-intro"><div class="eyebrow">THE SOLAR NEIGHBORHOOD</div><h1>A little closer<br>to the stars.</h1><p>Explore the space between home<br>and our nearest stellar neighbors.</p></div>
+      <div class="catalog-stats"><div><strong id="system-count">133</strong><span>local systems</span></div><div><strong>50<span class="stat-unit"> ly</span></strong><span>from Earth</span></div><div><strong>3D</strong><span>real positions</span></div></div>
+      <label class="search"><span aria-hidden="true">&#9906;</span><input id="search" type="search" placeholder="Find a star..." autocomplete="off" aria-label="Search stars"><kbd>/</kbd></label>
+      <div class="tabs" role="tablist" aria-label="Catalog filter"><button role="tab" id="tab-prominent" aria-selected="true" data-tab="prominent">Prominent</button><button role="tab" id="tab-all" aria-selected="false" data-tab="all">All stars</button><button role="tab" id="tab-highlighted" aria-selected="false" data-tab="highlighted">Marked <span id="marked-count">0</span></button></div>
+      <div class="list-heading"><span id="list-heading">BRIGHTEST FROM EARTH</span><span>DIST. / LY</span></div>
+      <div id="star-list" class="star-list" role="tabpanel" aria-labelledby="tab-prominent"></div>
+      <button id="highlights-button" class="manage-button"><span>+ &nbsp; Customize highlighted stars</span><span>&#8599;</span></button>
+      <div class="catalog-footnote"><span class="tiny-dot"></span>133 local systems + 7 distant direction references.<button id="data-note-button" aria-label="Read catalog coverage">Data notes &#8599;</button></div>
+    </aside>
+    <main class="map" id="map">
+      <canvas id="sky" tabindex="0" aria-label="Interactive 3D star map. Drag to look around, scroll to zoom, or use arrow keys. Double-click a star to fly there. The selected-star Fly button is a keyboard and touch alternative."></canvas>
+      <div id="direction-markers" class="direction-markers" aria-label="Directional reference stars"></div>
+      <div id="arrival-ring" class="arrival-ring" hidden><span id="arrival-caption"></span></div>
+      <div class="view-heading"><div class="eyebrow"><span class="live-dot"></span><span id="perspective-mode">LIVE PERSPECTIVE</span></div><h2 id="observer-title">Earth / Sol</h2><span id="observer-subtitle">At home, looking toward Alpha Centauri</span></div>
+      <div class="map-controls"><button id="catalog-toggle" class="map-button mobile-only" aria-expanded="false" aria-controls="catalog-panel">Stars</button><button id="grid-toggle" class="map-button" aria-pressed="true">Grid</button><button id="labels-toggle" class="map-button" aria-pressed="true">Labels</button><button id="directions-toggle" class="map-button" aria-pressed="true">Directions</button><button id="sky-view-button" class="map-button" hidden>Sky view &#8601;</button><button id="reset-button" class="map-button" title="Look toward the other system">Recenter &#8634;</button></div>
+      <section class="selection-card" aria-label="Selected star">
+        <div class="eyebrow"><span class="selection-dot"></span><span id="selection-kicker">DESTINATION IN FOCUS</span><button id="mark-star" class="star-mark" aria-label="Highlight selected star" aria-pressed="false" title="Highlight selected star">&#9734;</button></div>
+        <h3 id="selected-name">Alpha Centauri</h3><p id="selected-alias">Rigil Kentaurus</p>
+        <div class="selection-stats"><div><span>FROM EARTH</span><strong id="selected-distance">4.39 <small>ly</small></strong></div><div><span>FROM YOU</span><strong id="selected-relative">4.39 <small>ly</small></strong></div></div>
+        <div class="spectral-line"><span id="spectral-dot" class="tiny-dot"></span><span id="selected-spectral">G2V + K1V + M5.5V</span><span id="selected-kind">Triple system</span></div>
+        <button id="selection-action" class="primary-button">Fly to Alpha Centauri <span>&#8599;</span></button>
+      </section>
+      <div id="tooltip" class="star-tooltip" hidden></div>
+      <div class="map-legend"><span><i class="legend-dot"></i>Catalog star</span><span><i class="legend-dot destination"></i>Sol / Alpha Centauri</span><span><i class="legend-dot highlighted"></i>Your highlights</span></div>
+      <button id="neighborhood-button" class="neighborhood" aria-label="Open external 3D neighborhood view" aria-pressed="false" title="Click to explore the neighborhood from outside"><span class="eyebrow">NEIGHBORHOOD <span id="overview-range">50 LY</span></span><canvas id="overview" aria-hidden="true"></canvas><span class="overview-caption"><span class="tiny-dot"></span><span id="overview-caption">Explore in 3D</span><span id="overview-action">Open &#8599;</span></span></button>
+      <div id="external-note" class="external-note" hidden><span id="external-scale">10 LY RINGS</span><span>Height guides to the Galactic reference plane</span></div>
+      <div class="zoom-controls"><button id="zoom-in" aria-label="Zoom in">+</button><span id="fov-label">90&#176;</span><button id="zoom-out" aria-label="Zoom out">&#8722;</button></div>
+      <div class="flight-dock">
+        <div class="route"><div class="route-stop"><span id="route-start-dot" class="route-dot active"></span><div><strong id="route-start-name">Earth</strong><span id="route-start-detail">SOL SYSTEM</span></div></div><div class="route-line"><span id="route-distance" class="route-distance">4.39 LIGHT-YEARS</span><div class="route-track"><div id="route-progress"></div><span id="route-ship">&#10022;</span></div></div><div class="route-stop"><span id="route-end-dot" class="route-dot"></span><div><strong id="route-end-name">Alpha Centauri</strong><span id="route-end-detail">RIGIL KENTAURUS</span></div></div></div>
+        <div class="flight-actions"><div class="flight-status"><span id="status-dot" class="live-dot"></span><span id="flight-status" role="status">Ready for departure</span></div><button id="skip-button" class="text-button" hidden>Skip flight</button><button id="fly-button" class="primary-button">Begin journey <span>&#8594;</span></button></div>
+      </div>
+      <footer class="map-footer"><span id="interaction-hints">DRAG TO LOOK / SCROLL TO ZOOM / DOUBLE-CLICK TO FLY</span><span id="visible-count">J2000 COORDINATES</span></footer>
+      <div id="announcement" class="sr-only" aria-live="polite"></div>
+    </main>
+  </div>
+  <dialog id="highlights-dialog">
+    <form method="dialog" class="dialog-heading"><div><div class="eyebrow">MAKE IT YOUR UNIVERSE</div><h2>Highlighted stars</h2></div><button class="icon-button" aria-label="Close highlights editor">&#10005;</button></form>
+    <p>Paste star names, one per line or separated by commas. Catalog names and proper names both work.</p>
+    <label for="highlight-names">Your star list</label><textarea id="highlight-names" rows="7" placeholder="Sirius&#10;Tau Ceti&#10;Vega"></textarea>
+    <p class="dialog-hint">Highlights appear in gold. Sol and Alpha Centauri always keep their rose navigation markers. Saved in this browser.</p>
+    <div id="highlight-feedback" role="status"></div><button id="save-highlights" class="primary-button">Save highlights <span>&#10003;</span></button>
+  </dialog>
+  <dialog id="about-dialog">
+    <form method="dialog" class="dialog-heading"><div><div class="eyebrow">A MAP, NOT A BACKDROP</div><h2>Real space. Honest scale.</h2></div><button class="icon-button" aria-label="Close data notes">&#10005;</button></form>
+    <p>This map uses your supplied <strong>reference\50lys-list.txt</strong>: <strong>132 nearby systems, plus Sol</strong>, within 50 light-years of Earth. It is a bright-star selection (Earth apparent magnitude 6.5 or brighter), <strong>not a complete census</strong>. Apart from the requested direction references below, faint red dwarfs and distant sky stars aren't added.</p>
+    <p>Seven additional stars requested as direction references are outside that 50-light-year catalog: Hadar, Polaris, CS Camelopardalis, Miram, Alpha Lupi, Alpha Circini, and Delta Circini. Their J2000 positions, visual magnitudes, and parallaxes come from SIMBAD / CDS (retrieved October 23, 2026); approximate distances use inverse parallax. These distant references are labeled separately in the catalog.</p>
+    <p>Direction names preserve your reference views: from Earth facing Alpha Centauri, or from Alpha Centauri facing Sol, with celestial north up and east left. The labels do not change names when you turn; their arrows track the actual star direction from the current camera. They are not Earth's geographic compass directions. Select a marker to look at it; double-click a star to travel.</p>
+    <p>J2000 right ascension, declination, and distance are converted into fixed 3D Cartesian positions in light-years. Moving the observer changes every star's direction, distance, and displayed brightness. Stars are not attached to a sky sphere.</p>
+    <p>Earth is represented by Sol at this scale. Multiple stars share one catalog system position; Alpha Centauri's components, including Proxima, are not separately resolved. The endpoint is the catalog system position.</p>
+    <p>Click Neighborhood to switch to an external, orbitable 3D map inspired by your reference image. Sol-centered distance rings lie in the Galactic reference plane, and vertical guides show each star's height above or below it. Drag to orbit, scroll to change camera distance, and use Sky view to return without moving the observer. Selecting a star centers the external camera on it; double-clicking starts a journey in sky view.</p>
+    <p>Point sizes and glow are enhanced for readability. Grid lines are guides, not physical objects. The small overview is a fixed equatorial projection, while the external map uses a Galactic frame. Travel is cinematic, not a simulation of physically possible speed, light-time, proper motion, or relativistic effects.</p>
+    <p class="dialog-hint">Reference provenance: Hipparcos (1997), Harvard Revised Bright Star Catalogue (1991), and Gliese / Jahreiß (1991), as cited in your supplied file. Positions and distances are preserved as supplied, not updated measurements.</p>
+  </dialog>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

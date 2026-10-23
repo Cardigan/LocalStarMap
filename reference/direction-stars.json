@@ -1,0 +1,32 @@
+{
+  "source": "SIMBAD / CDS, ICRS coordinates at J2000; distance estimated from catalog parallax",
+  "sourceUrl": "https://simbad.cds.unistra.fr/simbad/sim-tap",
+  "retrieved": "2026-10-23",
+  "stars": [
+    { "id": "beta-centauri", "catalogName": "Beta Centauri", "name": "Hadar", "simbadId": "* bet Cen", "ra": 210.95585562281522, "dec": -60.373035161541594, "parallaxMas": 8.32, "spectral": "B1III", "magnitude": 0.58 },
+    { "id": "alpha-ursae-minoris", "catalogName": "Alpha Ursae Minoris", "name": "Polaris", "simbadId": "* alf UMi", "ra": 37.954560670189856, "dec": 89.26410896994187, "parallaxMas": 7.54, "spectral": "F8Ib", "magnitude": 2.02 },
+    { "id": "cs-camelopardalis", "catalogName": "CS Camelopardalis", "name": "CS Camelopardalis", "simbadId": "V* CS Cam", "ra": 52.267220373399994, "dec": 59.940333656830006, "parallaxMas": 1.0527, "spectral": "B9Ia", "magnitude": 4.22 },
+    { "id": "eta-persei", "catalogName": "Eta Persei", "name": "Miram", "simbadId": "* eta Per", "ra": 42.67420822277708, "dec": 55.895494367171665, "parallaxMas": 3.2657, "spectral": "K3-Ib-IIa", "magnitude": 3.79 },
+    { "id": "alpha-lupi", "catalogName": "Alpha Lupi", "name": "Alpha Lupi", "simbadId": "* alf Lup", "ra": 220.4823157775, "dec": -47.38819874611111, "parallaxMas": 7.02, "spectral": "B1.5III", "magnitude": 2.286 },
+    { "id": "alpha-circini", "catalogName": "Alpha Circini", "name": "Alpha Circini", "simbadId": "* alf Cir", "ra": 220.62675271705453, "dec": -64.97513301263639, "parallaxMas": 60.993, "spectral": "A7VpSrCrEu", "magnitude": 3.19 },
+    { "id": "delta-circini", "catalogName": "Delta Circini", "name": "Delta Circini", "simbadId": "* del Cir", "ra": 229.23706629149999, "dec": -60.95725557726, "parallaxMas": 1.4345, "spectral": "O8V", "magnitude": 5.09 }
+  ],
+  "directions": {
+    "sol": [
+      { "direction": "Forward", "starId": "alpha-centauri" },
+      { "direction": "Backward", "starId": "eta-persei" },
+      { "direction": "Up", "starId": "alpha-lupi" },
+      { "direction": "Down", "starId": "alpha-circini" },
+      { "direction": "Left", "starId": "delta-circini" },
+      { "direction": "Right", "starId": "beta-centauri" }
+    ],
+    "alpha-centauri": [
+      { "direction": "Forward", "starId": "sol" },
+      { "direction": "Backward", "starId": "beta-centauri" },
+      { "direction": "Up", "starId": "alpha-ursae-minoris" },
+      { "direction": "Down", "starId": "theta-persei" },
+      { "direction": "Left", "starId": "cs-camelopardalis" },
+      { "direction": "Right", "starId": "eta-cassiopeiae" }
+    ]
+  }
+}
