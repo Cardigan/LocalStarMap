@@ -79,8 +79,9 @@ function resize() {
   mini.setTransform(dpr, 0, 0, dpr, 0, 0);
   exclusions = ['.selection-card', '.view-heading', '.map-controls', '.flight-dock', '.neighborhood', '.map-legend', '.external-note', '.zoom-controls'].map(selector => {
     const box = document.querySelector(selector).getBoundingClientRect();
-    return { x: box.left - rect.left - 8, y: box.top - rect.top - 8, w: box.width + 16, h: box.height + 16 };
-  });
+    if (!box.width || !box.height) return null;
+    return { selector, x: box.left - rect.left - 8, y: box.top - rect.top - 8, w: box.width + 16, h: box.height + 16 };
+  }).filter(Boolean);
   dirty = true;
 }
 
@@ -304,6 +305,7 @@ function beginFlight(destination) {
     travelDuration: reducedMotion.matches ? 700 : 8000,
     turnDuration: reducedMotion.matches ? 300 : 2600
   };
+  $('map').dataset.flying = 'true';
   state.route = { from: state.location, to: destination };
   updateRouteUI();
   updateDirectionButtons();
@@ -328,6 +330,7 @@ function finishFlight() {
   state.location = flight.destination;
   state.selected = flight.origin;
   state.flight = null;
+  $('map').dataset.flying = 'false';
   updateLocationUI();
   updateListSelection();
   $('announcement').textContent = `Arrived at ${displayName(state.location)}. Looking back toward ${displayName(state.selected)}.`;
@@ -501,10 +504,10 @@ function positionDirectionButtons(basis) {
   const mobile = window.innerWidth <= 1400;
   const markerWidth = mobile ? 110 : 142, markerHeight = mobile ? 35 : 39;
   const halfW = markerWidth / 2, halfH = markerHeight / 2;
-  const dock = exclusions[3];
+  const dock = exclusions.find(box => box.selector === '.flight-dock');
   const bounds = {
     left: halfW + 12, right: width - halfW - 12,
-    top: 145 + halfH, bottom: Math.max(225, dock.y - halfH - 12)
+    top: 145 + halfH, bottom: Math.max(225, (dock?.y ?? height - 32) - halfH - 12)
   };
   const occupied = [...exclusions];
   for (const { star, reference, button, arrow } of markerButtons) {

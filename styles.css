@@ -226,17 +226,37 @@ dialog .dialog-hint { font-size: 10px; }
   .sidebar { display: none; position: absolute; top: 60px; bottom: 0; left: 0; width: 280px; background: var(--cp-bg-elevated); }
   .sidebar.open { display: flex; }
   .mobile-only { display: block; }
-  .selection-card { top: 112px; right: 18px; width: 210px; padding: 14px; }
+  .selection-card { top: 112px; right: 18px; width: 164px; padding: 10px; border-radius: 12px; }
+  .selection-card .eyebrow { font-size: 6px; letter-spacing: .5px; gap: 4px; }
+  .selection-card #selection-kicker { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .selection-card .star-mark { font-size: 18px; }
+  .selection-card h3 { font-size: 15px; line-height: 1.2; margin: 8px 0 5px; }
+  .selection-card > p, .selection-card .spectral-line { display: none; }
+  .selection-stats { margin-bottom: 8px; }
+  .selection-stats div:first-child { display: none; }
+  .selection-stats div:last-child { flex-direction: row; align-items: baseline; gap: 6px; }
+  .selection-stats div > span { font-size: 6px; letter-spacing: .5px; }
+  .selection-stats strong { font-size: 13px; }
+  .selection-stats small { font-size: 9px; }
+  .selection-card .primary-button { font-size: 9px; padding: 8px; min-height: 36px; gap: 4px; justify-content: center; }
   .map-controls { right: 18px; top: 20px; }
   .view-heading { left: 20px; top: 67px; }
   .view-heading h2 { font-size: 21px; }
   .view-heading > span { display: none; }
   .view-heading .eyebrow { font-size: 7px; }
-  .neighborhood { width: 190px; right: 18px; bottom: 174px; }
+  .neighborhood { width: 190px; right: 18px; bottom: 49px; }
   #overview { width: 162px; height: 96px; }
   .overview-caption > span:last-child { display: none; }
-  .external-note { left: 20px; bottom: 264px; }
-  .flight-dock { left: 18px; right: 18px; bottom: 49px; }
+  .external-note { left: 20px; bottom: 220px; }
+  .map-legend { bottom: 49px; left: 20px; }
+  .flight-dock { display: none; left: 18px; right: 18px; bottom: 49px; min-height: 0; padding: 8px 10px; gap: 0; }
+  .flight-dock .route { display: none; }
+  .flight-actions { width: 100%; justify-content: space-between; gap: 8px; }
+  .flight-status { display: flex; font-size: 8px; }
+  .flight-actions .primary-button { margin-left: auto; font-size: 10px; padding: 8px 12px; min-height: 36px; }
+  .map[data-flying="true"] .flight-dock { display: flex; }
+  .map[data-flying="true"] .neighborhood, .map[data-flying="true"] .map-legend { bottom: 118px; }
+  .map[data-flying="true"] .external-note { bottom: 286px; }
   .map-footer { left: 20px; right: 18px; }
   .zoom-controls { right: 18px; top: 46%; }
 }
@@ -249,32 +269,15 @@ dialog .dialog-hint { font-size: 10px; }
   .view-heading { top: 64px; }
   .map-controls { left: 18px; right: 18px; gap: 4px; justify-content: space-between; }
   .map-button { font-size: 8px; padding: 7px 8px; }
-  .selection-card { top: 64px; width: 175px; padding: 12px; }
-  .selection-card .eyebrow { font-size: 6px; letter-spacing: .8px; }
-  .selection-card h3 { font-size: 17px; margin-top: 12px; }
-  .selection-card > p { font-size: 8px; margin-bottom: 12px; }
-  .selection-stats { gap: 18px; margin-bottom: 10px; }
-  .selection-stats div > span { font-size: 6px; }
-  .selection-stats strong { font-size: 18px; }
-  .spectral-line { font-size: 7px; padding: 9px 0; }
+  .selection-card { top: 64px; width: 156px; }
   #selected-kind { display: none; }
-  .selection-card .primary-button { font-size: 9px; padding: 9px; gap: 5px; }
-  .neighborhood { bottom: 194px; width: 146px; padding: 10px; }
+  .neighborhood { width: 146px; padding: 10px; }
   #overview { width: 124px; height: 80px; }
   .neighborhood .eyebrow { font-size: 6px; letter-spacing: .7px; }
   .overview-caption { font-size: 7px; }
-  .external-note { bottom: 286px; max-width: 132px; }
+  .external-note { bottom: 190px; max-width: 132px; }
   .external-note span:last-child { font-size: 8px; }
-  .map-legend { bottom: 194px; left: 20px; }
   .map-legend > span { font-size: 8px; }
-  .flight-dock { flex-direction: column; align-items: stretch; padding: 16px; gap: 16px; }
-  .route { width: 100%; gap: 15px; }
-  .route-stop strong { font-size: 11px; }
-  .route-line { min-width: 35px; }
-  .route-distance { font-size: 6px; letter-spacing: .5px; }
-  .flight-actions { justify-content: space-between; }
-  .flight-status { display: flex; font-size: 8px; }
-  .flight-actions .primary-button { margin-left: auto; font-size: 10px; padding: 9px 13px; }
   .map-footer { font-size: 6px; letter-spacing: .4px; }
   .footer-separator { margin: 0 4px; }
   #visible-count { display: none; }
