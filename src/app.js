@@ -24,6 +24,7 @@ const state = {
 };
 let width = 0, height = 0, dpr = 1, dirty = true, projected = [], palette = {}, exclusions = [];
 let pointer = null, lastTime = 0, uiElapsed = 0;
+const pointers = new Map();
 let canvasClickTimer = null, markerClickTimer = null, lastCanvasClick = null;
 let markerButtons = [];
 
@@ -233,8 +234,8 @@ function updateViewUI() {
   $('neighborhood-button').title = external ? 'Return to your observer without moving it' : 'Click to explore the neighborhood from outside';
   $('overview-caption').textContent = external ? 'Return to sky' : 'Explore in 3D';
   $('overview-action').textContent = external ? 'Return \u2199' : 'Open \u2197';
-  $('interaction-hints').textContent = `DRAG TO ${external ? 'ORBIT' : 'LOOK'} / SCROLL TO ZOOM / DOUBLE-CLICK TO FLY`;
-  canvas.setAttribute('aria-label', `Interactive 3D star map. Drag to ${external ? 'orbit the neighborhood' : 'look around'}, scroll to zoom, or use arrow keys. Double-click a star to fly there. The selected-star Fly button is a keyboard and touch alternative.`);
+  $('interaction-hints').textContent = `DRAG TO ${external ? 'ORBIT' : 'LOOK'} / PINCH OR SCROLL TO ZOOM / DOUBLE-CLICK TO FLY`;
+  canvas.setAttribute('aria-label', `Interactive 3D star map. Drag to ${external ? 'orbit the neighborhood' : 'look around'}, pinch or scroll to zoom, or use arrow keys. Double-click a star to fly there. The selected-star Fly button is a keyboard and touch alternative.`);
   if (external) {
     $('observer-title').textContent = 'Solar neighborhood';
     $('observer-subtitle').textContent = `Orbiting the stars. Observer remains at ${displayName(state.location)}${state.flight ? ' (in flight)' : ''}.`;
@@ -261,8 +262,7 @@ function setView(view) {
   clearTimeout(canvasClickTimer);
   clearTimeout(markerClickTimer);
   lastCanvasClick = null;
-  pointer = null;
-  canvas.classList.remove('dragging');
+  resetPointers();
   state.focus = null;
   state.hover = null;
   $('tooltip').hidden = true;
@@ -272,7 +272,7 @@ function setView(view) {
   updateDirectionButtons();
   resize();
   $('announcement').textContent = view === 'external'
-    ? 'External neighborhood view. Drag or use arrow keys to orbit; scroll to zoom. Sky view returns to your observer.'
+    ? 'External neighborhood view. Drag or use arrow keys to orbit; pinch or scroll to zoom. Sky view returns to your observer.'
     : `Returned to the sky at ${displayName(state.location)}.`;
   canvas.focus({ preventScroll: true });
   dirty = true;
@@ -293,8 +293,7 @@ function beginFlight(destination) {
   if (state.view === 'external') setView('sky');
   clearTimeout(canvasClickTimer);
   clearTimeout(markerClickTimer);
-  pointer = null;
-  canvas.classList.remove('dragging');
+  resetPointers();
   state.focus = null;
   state.hover = null;
   $('tooltip').hidden = true;
@@ -783,18 +782,60 @@ function hitTest(x, y) {
     .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0]?.star || null;
 }
 
+function resetPointers() {
+  const ids = [...pointers.keys()];
+  pointers.clear();
+  pointer = null;
+  canvas.classList.remove('dragging');
+  for (const id of ids) {
+    if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+  }
+}
+
+function releasePointer(event) {
+  if (!pointers.delete(event.pointerId)) return;
+  const next = pointers.entries().next().value;
+  pointer = next ? { id: next[0], ...next[1], distance: Infinity } : null;
+  if (!pointer) canvas.classList.remove('dragging');
+  if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+}
+
+function pointerSeparation() {
+  const [a, b] = pointers.values();
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
 canvas.addEventListener('pointerdown', event => {
   if ((state.flight && state.view === 'sky') || (event.pointerType === 'mouse' && event.button !== 0)) return;
   state.focus = null;
-  pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, distance: 0 };
+  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (pointer) {
+    pointer.distance = Infinity;
+    clearTimeout(canvasClickTimer);
+    lastCanvasClick = null;
+  } else {
+    pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, distance: 0 };
+  }
+  state.hover = null;
+  $('tooltip').hidden = true;
   canvas.setPointerCapture(event.pointerId);
   canvas.classList.add('dragging');
+  dirty = true;
 });
 canvas.addEventListener('pointermove', event => {
-  if (pointer && pointer.id === event.pointerId) {
+  if (pointers.has(event.pointerId) && pointers.size > 1) {
+    const before = pointerSeparation();
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const after = pointerSeparation();
+    if (before > 0 && after > 0) {
+      const ratio = before / after;
+      zoom(state.view === 'external' ? Math.log(ratio) / .025 : state.fov * (ratio - 1));
+    }
+  } else if (pointer && pointer.id === event.pointerId) {
     const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
     pointer.distance += Math.hypot(dx, dy);
     pointer.x = event.clientX; pointer.y = event.clientY;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (state.view === 'external') {
       state.orbit.yaw -= dx * .005;
       state.orbit.pitch = clamp(state.orbit.pitch + dy * .005, -1.5, 1.5);
@@ -804,7 +845,7 @@ canvas.addEventListener('pointermove', event => {
     }
     $('tooltip').hidden = true;
     dirty = true;
-  } else if (!state.flight) {
+  } else if (!pointers.size && !state.flight) {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left, y = event.clientY - rect.top;
     const star = hitTest(x, y);
@@ -819,8 +860,7 @@ canvas.addEventListener('pointermove', event => {
   }
 });
 canvas.addEventListener('pointerup', event => {
-  if (!pointer || pointer.id !== event.pointerId) return;
-  if (pointer.distance < 6) {
+  if (pointer && pointer.id === event.pointerId && pointer.distance < 6) {
     const rect = canvas.getBoundingClientRect();
     const recent = lastCanvasClick && performance.now() - lastCanvasClick.time < 650 && Math.hypot(event.clientX - lastCanvasClick.x, event.clientY - lastCanvasClick.y) < 16;
     const star = recent ? lastCanvasClick.star : hitTest(event.clientX - rect.left, event.clientY - rect.top);
@@ -830,9 +870,7 @@ canvas.addEventListener('pointerup', event => {
       canvasClickTimer = setTimeout(() => selectStar(star, state.view === 'sky'), 280);
     }
   }
-  pointer = null;
-  canvas.classList.remove('dragging');
-  canvas.releasePointerCapture(event.pointerId);
+  releasePointer(event);
 });
 canvas.addEventListener('dblclick', event => {
   if (state.flight) return;
@@ -842,7 +880,8 @@ canvas.addEventListener('dblclick', event => {
   const star = recent ? lastCanvasClick.star : hitTest(event.clientX - rect.left, event.clientY - rect.top);
   if (star) beginFlight(star);
 });
-canvas.addEventListener('pointercancel', () => { pointer = null; canvas.classList.remove('dragging'); });
+canvas.addEventListener('pointercancel', releasePointer);
+canvas.addEventListener('lostpointercapture', releasePointer);
 canvas.addEventListener('pointerleave', () => { $('tooltip').hidden = true; state.hover = null; dirty = true; });
 function zoom(amount) {
   if (state.view === 'external') {
